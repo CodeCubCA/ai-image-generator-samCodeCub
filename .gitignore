@@ -1,0 +1,32 @@
+# Environment variables
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/
+
+# Generated images (optional - uncomment if you want to save images locally)
+# generated_images/
