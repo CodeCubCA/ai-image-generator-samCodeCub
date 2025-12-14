@@ -5,12 +5,15 @@ from dotenv import load_dotenv
 from datetime import datetime
 from io import BytesIO
 import random
+import google.generativeai as genai
 
 # Load environment variables
 load_dotenv()
 
 # Configuration
 HUGGINGFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
+GOOGLE_API_KEY = "AIzaSyAvdTt-t5KuGvAuzt7yZAyYBw9fklc-Wk8"
+
 # Primary model
 MODEL_NAME = "black-forest-labs/FLUX.1-schnell"
 # Fallback models if quota exceeded
@@ -20,8 +23,12 @@ FALLBACK_MODELS = [
     "CompVis/stable-diffusion-v1-4"
 ]
 
-# Initialize HuggingFace client
+# Initialize HuggingFace client for image generation
 client = InferenceClient(token=HUGGINGFACE_TOKEN)
+
+# Initialize Google AI for chat
+genai.configure(api_key=GOOGLE_API_KEY)
+gemini_model = genai.GenerativeModel('gemini-pro')
 
 # Consistent character description (based on the reference image)
 BASE_CHARACTER = "a stylish man in his late 20s with a full brown beard, wearing trendy sunglasses, casual modern clothing"
@@ -133,13 +140,8 @@ Example: Benny the light brown cottontail bunny with long floppy ears
 
 List all characters, one per line."""
 
-        char_response = client.chat_completion(
-            messages=[{"role": "user", "content": character_prompt}],
-            model="meta-llama/Llama-3.2-3B-Instruct",
-            max_tokens=300
-        )
-
-        character_descriptions = char_response.choices[0].message.content.strip()
+        char_response = gemini_model.generate_content(character_prompt)
+        character_descriptions = char_response.text.strip()
 
         # Show character descriptions to user
         st.info("📝 Character Descriptions:")
@@ -161,13 +163,8 @@ Page 3: searching for food together in the meadow
 
 Provide exactly {num_pages} scenes."""
 
-        action_response = client.chat_completion(
-            messages=[{"role": "user", "content": action_prompt}],
-            model="meta-llama/Llama-3.2-3B-Instruct",
-            max_tokens=500
-        )
-
-        action_text = action_response.choices[0].message.content
+        action_response = gemini_model.generate_content(action_prompt)
+        action_text = action_response.text
 
         # Parse actions
         actions = []
@@ -274,13 +271,9 @@ if current_conv:
                 current_conv["name"] = user_message[:20] + ("..." if len(user_message) > 20 else "")
 
             try:
-                # Generate AI response
-                response = client.chat_completion(
-                    messages=[{"role": "user", "content": user_message}],
-                    model="meta-llama/Llama-3.2-3B-Instruct",
-                    max_tokens=500
-                )
-                ai_response = response.choices[0].message.content
+                # Generate AI response using Google Gemini
+                response = gemini_model.generate_content(user_message)
+                ai_response = response.text
                 current_conv["messages"].append({"role": "assistant", "content": ai_response})
             except Exception as e:
                 st.sidebar.error(f"Error: {str(e)}")
