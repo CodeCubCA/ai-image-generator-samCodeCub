@@ -100,7 +100,19 @@ def generate_image(prompt):
         image = client.text_to_image(prompt, model=MODEL_NAME)
         return image
     except Exception as e:
-        st.error(f"Error: {str(e)}")
+        error_msg = str(e)
+        if "402" in error_msg or "Payment Required" in error_msg:
+            st.error("⚠️ **HuggingFace API Quota Exceeded**")
+            st.info("""
+            Your free tier monthly usage limit has been reached. Options:
+            - ⏰ Wait for monthly quota to reset
+            - 💎 Subscribe to HuggingFace PRO (20x more usage)
+            - 💳 Add pre-paid credits to your account
+
+            Visit: https://huggingface.co/settings/billing
+            """)
+        else:
+            st.error(f"Error: {error_msg}")
         return None
 
 def generate_multiple_images(prompts_list):
