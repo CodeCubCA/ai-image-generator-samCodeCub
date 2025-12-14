@@ -315,16 +315,16 @@ st.info("⚠️ Note: AI will generate similar-looking people based on the descr
 # Mode selection
 mode = st.radio("Generation Mode:", ["Single Image", "Multiple Images (Story)"], horizontal=True)
 
-# Handle random prompt button first (before text area is created)
-if st.session_state.get("random_clicked", False):
-    st.session_state.prompt_value = generate_random_portrait()
-    st.session_state.random_clicked = False
-
 # Initialize session state for prompt if not exists
 if "prompt_value" not in st.session_state:
     st.session_state.prompt_value = ""
 
 if mode == "Single Image":
+    # Handle random prompt button first (before text area is created)
+    if st.session_state.get("random_clicked", False):
+        st.session_state.prompt_value = generate_random_portrait()
+        st.session_state.random_clicked = False
+
     # Single image mode
     # Input
     prompt = st.text_area("Portrait description:",
