@@ -401,7 +401,7 @@ if generate_button:
 
                 if image:
                     st.success("Portrait generated successfully! ✨")
-                    st.image(image, use_container_width=True)
+                    st.image(image)
 
                     # Store image in session state for download
                     st.session_state.generated_image = image
@@ -489,7 +489,7 @@ if "generated_images" in st.session_state and st.session_state.generated_images:
         st.caption(prompt)
 
         if image:
-            st.image(image, use_container_width=True)
+            st.image(image)
 
             # Individual download button
             img_byte_arr = BytesIO()
