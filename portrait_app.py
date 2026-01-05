@@ -10,7 +10,7 @@ import random
 load_dotenv()
 
 # Configuration
-HUGGINGFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
+HUGGINGFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN", "").strip().strip('"')
 
 # Primary model
 MODEL_NAME = "black-forest-labs/FLUX.1-schnell"
