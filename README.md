@@ -1,5 +1,5 @@
 ---
-title: AI Image Generator
+title: AI Portrait Generator
 emoji: 🎨
 colorFrom: blue
 colorTo: purple
@@ -9,9 +9,9 @@ app_file: portrait_app.py
 pinned: false
 ---
 
-# AI Image Generator
+# AI Portrait Generator
 
-Create amazing AI-generated images and stories with this powerful tool!
+Create amazing AI-generated portrait images and stories with this powerful tool!
 
 ## Features
 
