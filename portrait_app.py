@@ -8,7 +8,7 @@ import random
 
 # Page configuration
 st.set_page_config(
-    page_title="AI Creative Assistant",
+    page_title="Zeno - AI Creative Assistant",
     page_icon="🎨",
     layout="centered",
     initial_sidebar_state="collapsed"
@@ -336,7 +336,7 @@ if "generated_image" not in st.session_state:
 # Header
 st.markdown("""
 <div class="header-container">
-    <h1>AI Creative Assistant</h1>
+    <h1>Zeno</h1>
     <p>Chat naturally or ask me to generate professional images</p>
 </div>
 """, unsafe_allow_html=True)
