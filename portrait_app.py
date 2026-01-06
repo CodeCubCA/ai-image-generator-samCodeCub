@@ -19,8 +19,8 @@ load_dotenv()
 
 # Configuration
 HUGGINGFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN", "").strip().strip('"')
-IMAGE_MODEL = "black-forest-labs/FLUX.1-dev"  # Better quality model
-CHAT_MODEL = "meta-llama/Llama-3.2-11B-Vision-Instruct"  # Smarter chat model
+IMAGE_MODEL = "black-forest-labs/FLUX.1-schnell"  # Fast, working model
+CHAT_MODEL = "meta-llama/Llama-3.2-3B-Instruct"  # Working chat model
 
 # Initialize HuggingFace client
 client = InferenceClient(token=HUGGINGFACE_TOKEN)
@@ -245,9 +245,7 @@ def generate_image(prompt):
         enhanced_prompt = enhance_image_prompt(prompt)
         image = client.text_to_image(
             enhanced_prompt,
-            model=IMAGE_MODEL,
-            height=1024,
-            width=1024
+            model=IMAGE_MODEL
         )
         return image
     except Exception as e:
