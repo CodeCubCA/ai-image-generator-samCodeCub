@@ -8,7 +8,7 @@ import random
 
 # Page configuration
 st.set_page_config(
-    page_title="Zeno - AI Creative Assistant",
+    page_title="Zeno",
     page_icon="🎨",
     layout="centered",
     initial_sidebar_state="collapsed"
@@ -24,7 +24,7 @@ MODEL_NAME = "black-forest-labs/FLUX.1-schnell"
 # Initialize HuggingFace client
 client = InferenceClient(token=HUGGINGFACE_TOKEN)
 
-# Professional CSS styling
+# Professional CSS styling - ChatGPT style
 st.markdown("""
 <style>
     /* Hide Streamlit elements */
@@ -35,7 +35,7 @@ st.markdown("""
 
     /* App background */
     .stApp {
-        background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+        background: #ffffff;
     }
 
     .main {
@@ -43,223 +43,193 @@ st.markdown("""
     }
 
     .block-container {
-        padding: 1.5rem 2rem 2rem 2rem !important;
-        max-width: 900px !important;
+        padding: 0 !important;
+        max-width: 800px !important;
     }
 
     /* Header */
     .header-container {
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
-        padding: 2rem 2rem 1.75rem 2rem;
-        margin: -1.5rem -2rem 1.5rem -2rem;
-        border-radius: 0 0 24px 24px;
-        box-shadow: 0 4px 20px rgba(139, 92, 246, 0.25);
+        background: #ffffff;
+        padding: 1.25rem 2rem;
+        border-bottom: 1px solid #e5e7eb;
+        position: sticky;
+        top: 0;
+        z-index: 100;
     }
 
     .header-container h1 {
-        color: white;
-        font-size: 2rem;
-        font-weight: 700;
-        margin: 0 0 0.5rem 0;
-        letter-spacing: -0.5px;
+        color: #000000;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
     }
 
-    .header-container p {
-        color: rgba(255, 255, 255, 0.95);
-        font-size: 1rem;
-        margin: 0;
-        font-weight: 400;
+    /* Chat container */
+    .chat-area {
+        padding: 2rem;
+        min-height: calc(100vh - 200px);
     }
 
     /* Chat messages */
     .message-container {
-        margin-bottom: 1.25rem;
+        margin-bottom: 1.5rem;
         display: flex;
         align-items: flex-start;
-        gap: 0.875rem;
-        animation: fadeIn 0.3s ease-in;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+        gap: 1rem;
     }
 
     .avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 600;
         font-size: 0.875rem;
         flex-shrink: 0;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .user-avatar {
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        background: #10a37f;
         color: white;
     }
 
     .ai-avatar {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        background: #5436da;
         color: white;
     }
 
-    .message-bubble {
+    .message-content {
         flex: 1;
-        padding: 1rem 1.25rem;
-        border-radius: 16px;
-        line-height: 1.6;
-        font-size: 0.95rem;
-    }
-
-    .user-bubble {
-        background: white;
-        color: #1f2937;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-
-    .ai-bubble {
-        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-        color: #1f2937;
-        border: 1px solid #bbf7d0;
+        line-height: 1.7;
+        font-size: 1rem;
+        color: #000000;
     }
 
     /* Input area */
+    .input-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        padding: 1.5rem 2rem 2rem 2rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
     .stTextInput > div > div > input {
         border-radius: 12px;
-        border: 2px solid #e5e7eb;
-        padding: 0.875rem 1.25rem;
-        font-size: 0.95rem;
-        transition: all 0.2s ease;
-        background: white;
+        border: 1px solid #d1d5db;
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+        background: #ffffff;
+        color: #000000;
     }
 
     .stTextInput > div > div > input:focus {
-        border-color: #8b5cf6;
-        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        border-color: #10a37f;
+        box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
     }
 
     /* Buttons */
     .stButton > button {
-        border-radius: 12px;
-        font-weight: 600;
-        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        padding: 0.625rem 1.25rem;
         transition: all 0.2s ease;
         border: none;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
     }
 
     .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        background: #10a37f;
         color: white;
-        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
     }
 
     .stButton > button[kind="primary"]:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        background: #0d8a6a;
     }
 
     .stButton > button[kind="secondary"] {
-        background: white;
-        color: #6366f1;
-        border: 2px solid #e5e7eb;
+        background: #f7f7f8;
+        color: #000000;
+        border: 1px solid #d1d5db;
     }
 
     .stButton > button[kind="secondary"]:hover {
-        border-color: #8b5cf6;
-        background: #faf5ff;
+        background: #ececf1;
     }
 
-    /* Image container */
-    .image-card {
-        background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
+    /* Image display */
+    .image-container {
         margin: 1.5rem 0;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    }
-
-    .image-card h4 {
-        margin: 0 0 1rem 0;
-        color: #1f2937;
-        font-weight: 600;
-        font-size: 1.1rem;
+        border-radius: 8px;
+        overflow: hidden;
     }
 
     .stImage {
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
     }
 
     /* Download button */
     .stDownloadButton > button {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        background: #10a37f;
         color: white;
-        border-radius: 12px;
+        border-radius: 8px;
         width: 100%;
-        margin-top: 1rem;
-        font-weight: 600;
-        padding: 0.875rem;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        margin-top: 0.75rem;
+        font-weight: 500;
+        padding: 0.625rem;
     }
 
     .stDownloadButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        background: #0d8a6a;
     }
 
     /* Empty state */
     .empty-state {
         text-align: center;
-        padding: 3rem 2rem;
-        background: white;
-        border-radius: 16px;
-        margin: 1rem 0;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        padding: 4rem 2rem;
     }
 
-    .empty-state-icon {
-        font-size: 3.5rem;
-        margin-bottom: 1rem;
-        filter: grayscale(20%);
+    .empty-state h2 {
+        color: #000000;
+        font-weight: 400;
+        margin-bottom: 2rem;
+        font-size: 2rem;
     }
 
-    .empty-state h3 {
-        color: #1f2937;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        font-size: 1.5rem;
-    }
-
-    .empty-state p {
-        color: #6b7280;
-        font-size: 1rem;
-    }
-
-    /* Quick actions */
-    .action-buttons {
-        display: flex;
+    .suggestion-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 0.75rem;
-        margin: 1.5rem 0;
+        margin-top: 2rem;
     }
 
-    /* Footer */
-    .footer {
-        text-align: center;
-        padding: 2rem 0 1rem 0;
-        color: #9ca3af;
+    .suggestion-card {
+        background: #f7f7f8;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #000000;
         font-size: 0.875rem;
+    }
+
+    .suggestion-card:hover {
+        background: #ececf1;
     }
 
     /* Spinner */
     .stSpinner > div {
-        border-color: #8b5cf6 !important;
+        border-color: #10a37f !important;
+    }
+
+    /* Form */
+    .stForm {
+        padding-bottom: 6rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -330,144 +300,109 @@ def chat_with_ai(message):
 # Initialize session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
-if "generated_image" not in st.session_state:
-    st.session_state.generated_image = None
 
 # Header
 st.markdown("""
 <div class="header-container">
     <h1>Zeno</h1>
-    <p>Chat naturally or ask me to generate professional images</p>
 </div>
 """, unsafe_allow_html=True)
 
-# Chat messages
+# Chat area
+st.markdown('<div class="chat-area">', unsafe_allow_html=True)
+
 if not st.session_state.messages:
     st.markdown("""
     <div class="empty-state">
-        <div class="empty-state-icon">💬</div>
-        <h3>How can I help you today?</h3>
-        <p>Start a conversation or ask me to generate an image</p>
+        <h2>How can I help you today?</h2>
     </div>
     """, unsafe_allow_html=True)
+
+    # Suggestion cards
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Generate a random portrait", use_container_width=True, type="secondary"):
+            st.session_state.messages.append({"role": "user", "content": "Generate a random portrait", "type": "text"})
+            st.session_state.messages.append({"role": "assistant", "content": "Creating a unique portrait for you...", "type": "text"})
+
+            with st.spinner("Generating..."):
+                prompt = generate_random_portrait()
+                image = generate_image(prompt)
+
+            if isinstance(image, str):
+                st.session_state.messages[-1]["content"] = "Unable to generate image due to quota limits."
+            else:
+                st.session_state.messages[-1] = {
+                    "role": "assistant",
+                    "content": "Here's your portrait!",
+                    "type": "image",
+                    "image": image
+                }
+            st.rerun()
+
+    with col2:
+        if st.button("Chat with me", use_container_width=True, type="secondary"):
+            pass
 else:
     for msg in st.session_state.messages:
         if msg["role"] == "user":
             st.markdown(f"""
             <div class="message-container">
-                <div class="avatar user-avatar">You</div>
-                <div class="message-bubble user-bubble">{msg['content']}</div>
+                <div class="avatar user-avatar">U</div>
+                <div class="message-content">{msg['content']}</div>
             </div>
             """, unsafe_allow_html=True)
         else:
             st.markdown(f"""
             <div class="message-container">
-                <div class="avatar ai-avatar">AI</div>
-                <div class="message-bubble ai-bubble">{msg['content']}</div>
+                <div class="avatar ai-avatar">Z</div>
+                <div class="message-content">{msg['content']}</div>
             </div>
             """, unsafe_allow_html=True)
 
-# Display generated image
-if st.session_state.generated_image:
-    st.markdown('<div class="image-card">', unsafe_allow_html=True)
-    st.markdown("<h4>Generated Image</h4>", unsafe_allow_html=True)
-    st.image(st.session_state.generated_image)
+            if msg.get("type") == "image" and msg.get("image"):
+                st.markdown('<div class="image-container">', unsafe_allow_html=True)
+                st.image(msg["image"])
 
-    # Download button
-    img_byte_arr = BytesIO()
-    st.session_state.generated_image.save(img_byte_arr, format='PNG')
-    img_byte_arr = img_byte_arr.getvalue()
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"ai_portrait_{timestamp}.png"
+                # Download button
+                img_byte_arr = BytesIO()
+                msg["image"].save(img_byte_arr, format='PNG')
+                img_byte_arr = img_byte_arr.getvalue()
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    st.download_button(
-        label="Download Image",
-        data=img_byte_arr,
-        file_name=filename,
-        mime="image/png"
-    )
-    st.markdown('</div>', unsafe_allow_html=True)
+                st.download_button(
+                    label="Download Image",
+                    data=img_byte_arr,
+                    file_name=f"zeno_{timestamp}.png",
+                    mime="image/png"
+                )
+                st.markdown('</div>', unsafe_allow_html=True)
 
-# Quick action buttons
-col1, col2, col3 = st.columns([2.5, 2.5, 1.5])
+st.markdown('</div>', unsafe_allow_html=True)
 
-with col1:
-    if st.button("Generate Random Portrait", use_container_width=True, type="primary"):
-        prompt = generate_random_portrait()
-        st.session_state.messages.append({"role": "user", "content": "Generate a random portrait"})
-        st.session_state.messages.append({"role": "assistant", "content": "Creating a random portrait for you..."})
-
-        with st.spinner("Generating image..."):
-            image = generate_image(prompt)
-
-        if isinstance(image, str):
-            if "error_quota" in image:
-                st.session_state.messages[-1]["content"] = "API quota limit reached. Please try again later or upgrade your plan."
-            else:
-                st.session_state.messages[-1]["content"] = f"Unable to generate image. {image}"
-        else:
-            st.session_state.generated_image = image
-            st.session_state.messages[-1]["content"] = "Your random portrait is ready! Check it out above."
-        st.rerun()
-
-with col2:
-    if st.button("Custom Image Prompt", use_container_width=True, type="secondary"):
-        st.session_state.show_prompt_input = True
-
-with col3:
-    if st.button("Clear", use_container_width=True, type="secondary"):
-        st.session_state.messages = []
-        st.session_state.generated_image = None
-        st.session_state.show_prompt_input = False
-        st.rerun()
-
-# Custom prompt input
-if st.session_state.get("show_prompt_input", False):
-    with st.form(key="custom_form", clear_on_submit=True):
-        custom_input = st.text_input("Describe the image you want to create", placeholder="e.g., a person at sunset on a beach with golden lighting...")
-        submit_custom = st.form_submit_button("Generate Image", type="primary", use_container_width=True)
-
-        if submit_custom and custom_input:
-            st.session_state.messages.append({"role": "user", "content": custom_input})
-            st.session_state.messages.append({"role": "assistant", "content": "Creating your custom image..."})
-
-            with st.spinner("Generating your image..."):
-                image = generate_image(custom_input)
-
-            if isinstance(image, str):
-                if "error_quota" in image:
-                    st.session_state.messages[-1]["content"] = "API quota exceeded. Please try again later."
-                else:
-                    st.session_state.messages[-1]["content"] = f"Unable to generate image: {image}"
-            else:
-                st.session_state.generated_image = image
-                st.session_state.messages[-1]["content"] = "Your custom image is ready!"
-
-            st.session_state.show_prompt_input = False
-            st.rerun()
-
-# Chat input
-st.markdown("<br>", unsafe_allow_html=True)
+# Chat input (fixed at bottom)
 with st.form(key="chat_form", clear_on_submit=True):
     user_input = st.text_input(
         "Message",
-        placeholder="Type your message here...",
+        placeholder="Message Zeno...",
         label_visibility="collapsed"
     )
 
-    col_send, col_spacer = st.columns([1.5, 4.5])
-    with col_send:
+    col1, col2 = st.columns([5, 1])
+    with col2:
         send_button = st.form_submit_button("Send", type="primary", use_container_width=True)
 
 if send_button and user_input:
-    st.session_state.messages.append({"role": "user", "content": user_input})
+    # Add user message
+    st.session_state.messages.append({"role": "user", "content": user_input, "type": "text"})
 
     # Check if user wants to generate an image
     if any(keyword in user_input.lower() for keyword in ["generate", "create", "make", "draw", "image", "picture", "portrait", "photo"]):
-        st.session_state.messages.append({"role": "assistant", "content": "Generating your image..."})
+        st.session_state.messages.append({"role": "assistant", "content": "Generating your image...", "type": "text"})
 
         with st.spinner("Creating image..."):
-            if len(user_input.split()) > 3:
+            # Use user description if detailed enough, otherwise generate random
+            if len(user_input.split()) > 5:
                 prompt = user_input
             else:
                 prompt = generate_random_portrait()
@@ -475,24 +410,18 @@ if send_button and user_input:
             image = generate_image(prompt)
 
         if isinstance(image, str):
-            if "error_quota" in image:
-                st.session_state.messages[-1]["content"] = "API quota limit reached. Please try again later."
-            else:
-                st.session_state.messages[-1]["content"] = f"Unable to generate image: {image}"
+            st.session_state.messages[-1]["content"] = "I've reached my API quota. Please try again later."
         else:
-            st.session_state.generated_image = image
-            st.session_state.messages[-1]["content"] = "Image generated successfully! You can see it above."
+            st.session_state.messages[-1] = {
+                "role": "assistant",
+                "content": "Here's the image you requested!",
+                "type": "image",
+                "image": image
+            }
     else:
         # Regular chat
         with st.spinner("Thinking..."):
             ai_response = chat_with_ai(user_input)
-        st.session_state.messages.append({"role": "assistant", "content": ai_response})
+        st.session_state.messages.append({"role": "assistant", "content": ai_response, "type": "text"})
 
     st.rerun()
-
-# Footer
-st.markdown("""
-<div class="footer">
-    Powered by HuggingFace FLUX.1 & Llama 3.2
-</div>
-""", unsafe_allow_html=True)
