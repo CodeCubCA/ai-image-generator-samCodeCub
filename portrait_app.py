@@ -8,12 +8,12 @@ import random
 
 # Page configuration
 st.set_page_config(
-    page_title="Zeno - AI Creative Assistant",
-    page_icon="🎨",
+    page_title="Zeno",
+    page_icon="🤖",
     layout="centered",
     initial_sidebar_state="collapsed",
     menu_items={
-        'About': "Zeno - Your AI Creative Assistant for chat and image generation"
+        'About': "AI"
     }
 )
 
