@@ -36,12 +36,17 @@ st.markdown("""
     .main {
         padding: 0;
         max-width: 100%;
+        background-color: #f9fafb;
     }
 
     .block-container {
         padding: 1rem 2rem;
         max-width: 1200px;
         margin: 0 auto;
+    }
+
+    .stApp {
+        background-color: #f9fafb;
     }
 
     /* Header */
@@ -67,13 +72,12 @@ st.markdown("""
 
     /* Chat messages */
     .chat-container {
-        background: #ffffff;
+        background: transparent;
         border-radius: 12px;
         padding: 1.5rem;
         margin-bottom: 1rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        min-height: 500px;
-        max-height: 600px;
+        min-height: 400px;
+        max-height: 500px;
         overflow-y: auto;
     }
 
