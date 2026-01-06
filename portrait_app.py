@@ -66,13 +66,13 @@ st.markdown("""
 
     /* Chat container */
     .chat-area {
-        padding: 2rem;
+        padding: 0rem 2rem 6rem 2rem;
         min-height: calc(100vh - 200px);
     }
 
     /* Chat messages */
     .message-container {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
         display: flex;
         align-items: flex-start;
         gap: 1rem;
@@ -190,21 +190,21 @@ st.markdown("""
     /* Empty state */
     .empty-state {
         text-align: center;
-        padding: 4rem 2rem;
+        padding: 1rem 2rem;
     }
 
     .empty-state h2 {
         color: #000000;
         font-weight: 400;
-        margin-bottom: 2rem;
-        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        font-size: 1.5rem;
     }
 
     .suggestion-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 0.75rem;
-        margin-top: 2rem;
+        margin-top: 0.5rem;
     }
 
     .suggestion-card {
@@ -232,6 +232,12 @@ st.markdown("""
         padding-bottom: 6rem;
     }
 </style>
+<script>
+    // Auto-scroll to bottom of chat
+    window.addEventListener('load', function() {
+        window.scrollTo(0, document.body.scrollHeight);
+    });
+</script>
 """, unsafe_allow_html=True)
 
 # Character and prompt configuration
@@ -317,32 +323,6 @@ if not st.session_state.messages:
         <h2>How can I help you today?</h2>
     </div>
     """, unsafe_allow_html=True)
-
-    # Suggestion cards
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Generate a random portrait", use_container_width=True, type="secondary"):
-            st.session_state.messages.append({"role": "user", "content": "Generate a random portrait", "type": "text"})
-            st.session_state.messages.append({"role": "assistant", "content": "Creating a unique portrait for you...", "type": "text"})
-
-            with st.spinner("Generating..."):
-                prompt = generate_random_portrait()
-                image = generate_image(prompt)
-
-            if isinstance(image, str):
-                st.session_state.messages[-1]["content"] = "Unable to generate image due to quota limits."
-            else:
-                st.session_state.messages[-1] = {
-                    "role": "assistant",
-                    "content": "Here's your portrait!",
-                    "type": "image",
-                    "image": image
-                }
-            st.rerun()
-
-    with col2:
-        if st.button("Chat with me", use_container_width=True, type="secondary"):
-            pass
 else:
     for msg in st.session_state.messages:
         if msg["role"] == "user":
@@ -396,13 +376,19 @@ if send_button and user_input:
     # Add user message
     st.session_state.messages.append({"role": "user", "content": user_input, "type": "text"})
 
+    # First, ask AI to understand the request
+    with st.spinner("Thinking..."):
+        # Check if user wants an image by asking the AI
+        check_prompt = f"Reply with ONLY 'IMAGE' if this request is asking for image generation, drawing, or visual creation. Reply with ONLY 'CHAT' otherwise. Request: {user_input}"
+        intent = chat_with_ai(check_prompt).strip().upper()
+
     # Check if user wants to generate an image
-    if any(keyword in user_input.lower() for keyword in ["generate", "create", "make", "draw", "image", "picture", "portrait", "photo"]):
+    if "IMAGE" in intent or any(keyword in user_input.lower() for keyword in ["generate", "create an image", "make an image", "draw", "picture of", "portrait", "photo of", "show me"]):
         st.session_state.messages.append({"role": "assistant", "content": "Generating your image...", "type": "text"})
 
         with st.spinner("Creating image..."):
             # Use user description if detailed enough, otherwise generate random
-            if len(user_input.split()) > 5:
+            if len(user_input.split()) > 3:
                 prompt = user_input
             else:
                 prompt = generate_random_portrait()
