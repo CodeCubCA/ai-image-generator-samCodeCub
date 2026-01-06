@@ -19,7 +19,8 @@ load_dotenv()
 
 # Configuration
 HUGGINGFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN", "").strip().strip('"')
-MODEL_NAME = "black-forest-labs/FLUX.1-schnell"
+IMAGE_MODEL = "black-forest-labs/FLUX.1-dev"  # Better quality model
+CHAT_MODEL = "meta-llama/Llama-3.2-11B-Vision-Instruct"  # Smarter chat model
 
 # Initialize HuggingFace client
 client = InferenceClient(token=HUGGINGFACE_TOKEN)
@@ -190,36 +191,14 @@ st.markdown("""
     /* Empty state */
     .empty-state {
         text-align: center;
-        padding: 1rem 2rem;
+        padding: 0.5rem 2rem;
     }
 
     .empty-state h2 {
         color: #000000;
         font-weight: 400;
-        margin-bottom: 0.5rem;
-        font-size: 1.5rem;
-    }
-
-    .suggestion-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 0.75rem;
-        margin-top: 0.5rem;
-    }
-
-    .suggestion-card {
-        background: #f7f7f8;
-        padding: 1rem;
-        border-radius: 8px;
-        border: 1px solid #e5e7eb;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        color: #000000;
-        font-size: 0.875rem;
-    }
-
-    .suggestion-card:hover {
-        background: #ececf1;
+        margin: 0;
+        font-size: 1.25rem;
     }
 
     /* Spinner */
@@ -240,49 +219,36 @@ st.markdown("""
 </script>
 """, unsafe_allow_html=True)
 
-# Character and prompt configuration
-BASE_CHARACTER = "a stylish man in his late 20s with a full brown beard, wearing trendy sunglasses, casual modern clothing"
+def enhance_image_prompt(user_prompt):
+    """Enhance user prompt for better image generation"""
+    # Add professional photography terms for realistic results
+    enhancements = [
+        "ultra realistic",
+        "8k uhd",
+        "high quality",
+        "professional photography",
+        "detailed",
+        "sharp focus",
+        "natural lighting",
+        "depth of field"
+    ]
 
-ACTIVITIES = [
-    "relaxing at a beach bar with a drink",
-    "sitting at a rooftop cafe during sunset",
-    "walking through a city street",
-    "standing on a yacht deck",
-    "enjoying coffee at an outdoor cafe",
-    "lounging by a pool"
-]
-
-CLOTHING = [
-    "wearing a casual hoodie and sunglasses",
-    "in a stylish bomber jacket",
-    "wearing a fitted t-shirt and chain necklace",
-    "in a linen button-up shirt"
-]
-
-SETTINGS = [
-    "warm sunset lighting, golden hour",
-    "soft natural lighting, afternoon",
-    "vibrant beach atmosphere",
-    "urban city background, evening"
-]
-
-DETAILS = [
-    "photorealistic, high quality, professional photography",
-    "cinematic portrait, 4k quality, sharp focus"
-]
-
-def generate_random_portrait():
-    """Generate a random scenario for the character"""
-    activity = random.choice(ACTIVITIES)
-    clothing = random.choice(CLOTHING)
-    setting = random.choice(SETTINGS)
-    detail = random.choice(DETAILS)
-    return f"{BASE_CHARACTER}, {clothing}, {activity}, {setting}, {detail}"
+    # Check if prompt already has quality terms
+    if not any(term in user_prompt.lower() for term in ["realistic", "quality", "4k", "8k", "professional"]):
+        return f"{user_prompt}, {', '.join(enhancements)}"
+    return user_prompt
 
 def generate_image(prompt):
-    """Generate image from text prompt"""
+    """Generate image from text prompt with enhanced quality"""
     try:
-        image = client.text_to_image(prompt, model=MODEL_NAME)
+        # Enhance the prompt for better results
+        enhanced_prompt = enhance_image_prompt(prompt)
+        image = client.text_to_image(
+            enhanced_prompt,
+            model=IMAGE_MODEL,
+            height=1024,
+            width=1024
+        )
         return image
     except Exception as e:
         error_msg = str(e)
@@ -296,12 +262,27 @@ def chat_with_ai(message):
     try:
         response = client.chat_completion(
             messages=[{"role": "user", "content": message}],
-            model="meta-llama/Llama-3.2-3B-Instruct",
+            model=CHAT_MODEL,
             max_tokens=500
         )
         return response.choices[0].message.content
     except Exception as e:
         return f"I apologize, but I encountered an error: {str(e)}"
+
+def is_image_request(user_input):
+    """Check if user wants to generate an image"""
+    image_keywords = [
+        "generate", "create", "make", "draw", "design",
+        "image", "picture", "photo", "portrait", "art",
+        "show me", "illustrate", "render", "visualize"
+    ]
+
+    # Check for keywords
+    user_lower = user_input.lower()
+    for keyword in image_keywords:
+        if keyword in user_lower:
+            return True
+    return False
 
 # Initialize session state
 if "messages" not in st.session_state:
@@ -376,31 +357,19 @@ if send_button and user_input:
     # Add user message
     st.session_state.messages.append({"role": "user", "content": user_input, "type": "text"})
 
-    # First, ask AI to understand the request
-    with st.spinner("Thinking..."):
-        # Check if user wants an image by asking the AI
-        check_prompt = f"Reply with ONLY 'IMAGE' if this request is asking for image generation, drawing, or visual creation. Reply with ONLY 'CHAT' otherwise. Request: {user_input}"
-        intent = chat_with_ai(check_prompt).strip().upper()
-
     # Check if user wants to generate an image
-    if "IMAGE" in intent or any(keyword in user_input.lower() for keyword in ["generate", "create an image", "make an image", "draw", "picture of", "portrait", "photo of", "show me"]):
-        st.session_state.messages.append({"role": "assistant", "content": "Generating your image...", "type": "text"})
+    if is_image_request(user_input):
+        st.session_state.messages.append({"role": "assistant", "content": "Creating your image...", "type": "text"})
 
-        with st.spinner("Creating image..."):
-            # Use user description if detailed enough, otherwise generate random
-            if len(user_input.split()) > 3:
-                prompt = user_input
-            else:
-                prompt = generate_random_portrait()
-
-            image = generate_image(prompt)
+        with st.spinner("Generating high-quality image..."):
+            image = generate_image(user_input)
 
         if isinstance(image, str):
             st.session_state.messages[-1]["content"] = "I've reached my API quota. Please try again later."
         else:
             st.session_state.messages[-1] = {
                 "role": "assistant",
-                "content": "Here's the image you requested!",
+                "content": "Here's your image!",
                 "type": "image",
                 "image": image
             }
