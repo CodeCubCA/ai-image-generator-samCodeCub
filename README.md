@@ -1,5 +1,5 @@
 ---
-title: AI Portrait Generator
+title: Zeno - AI Creative Assistant
 emoji: 🎨
 colorFrom: blue
 colorTo: purple
@@ -9,24 +9,22 @@ app_file: portrait_app.py
 pinned: false
 ---
 
-# AI Portrait Generator
+# Zeno - AI Creative Assistant
 
-Create amazing AI-generated portrait images and stories with this powerful tool!
+A ChatGPT-style AI assistant that can chat naturally and generate professional portrait images.
 
 ## Features
 
-- **Single Image Generation**: Generate custom images from text descriptions with infinite random prompt combinations
-- **Story Mode**: Create multi-image stories with consistent characters
-  - Manual mode: Define each scene yourself
-  - Auto-split mode: AI automatically splits your story into scenes
-- **AI Chat Assistant**: Built-in AI chatbot with organized conversation management
-- **Download**: Save all generated images with timestamps
+- **Intelligent Chat Interface**: Just type naturally - Zeno understands what you want
+- **Image Generation**: Ask for images and Zeno creates them automatically
+- **Clean Design**: Minimal, professional ChatGPT-style interface
+- **Download Images**: Save any generated images instantly
 
 ## How to Use
 
-1. Choose between Single Image or Story Mode
-2. Enter your prompt or story
-3. Click Generate!
-4. Download your creations
+Simply chat with Zeno:
+- "Generate an image of a person at sunset" → Creates image
+- "Tell me a joke" → Chats normally
+- "Create a portrait with golden hour lighting" → Generates portrait
 
-Built with Streamlit and HuggingFace FLUX.1-schnell model.
+Powered by HuggingFace FLUX.1 & Llama 3.2
